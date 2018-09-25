@@ -17,7 +17,7 @@ from twisted.internet import defer
 from twisted.python import log
 from twisted.python.components import proxyForInterface
 from twisted.web import resource, util
-from twisted.web.error import ErrorPage
+from twisted.web.resource import ErrorPage
 from twisted.cred import credentials, error
 
 
@@ -79,32 +79,6 @@ class UnauthorizedResource(resource.Resource):
 
 
 
-class RootResource(resource.Resource):
-    isLeaf = False
-
-    def __init__(self, user):
-        resource.Resource.__init__(self)
-        self.user = user
-        children = ()
-        for childName, childResource in children:
-            self.putChild(childName, childResource)
-
-    def getChild(self, path, request):
-        ##import pdb
-        #pdb.set_trace()
-        segments = request.postpath
-
-        if not path:
-            requestedResource = self
-        elif segments and segments[-1] == 'authorized':
-            requestedResource = AuthorizedResource(self.user)
-        else:
-            requestedResource = resource.Resource.getChild(self, path, request)
-        return requestedResource
-
-    def render_GET(self, request):
-        return 'txWebAuth: That thing we did, that does that thing you wanted.'
-
 
 
 class WebAuthSessionWrapper(resource.Resource):
@@ -158,7 +132,8 @@ class WebAuthSessionWrapper(resource.Resource):
         d.addCallbacks(self._loginSucceeded, self._loginFailed)
         return d
 
-    def _loginSucceeded(self, (interface, avatar, logout)):
+    def _loginSucceeded(self, tpl):
+        (interface, avatar, logout) = tpl
         #import pdb
         #pdb.set_trace()
         return avatar
@@ -194,6 +169,6 @@ class WebAuthSessionWrapper(resource.Resource):
         # Don't consume any segments of the request - this class should be
         # transparent!
 
-        log.msg('getChild: ' + path)
+        log.msg('getChild: %s' % (path,))
         request.postpath.insert(0, request.prepath.pop())
         return self._authorizedResource(request)

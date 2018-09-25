@@ -9,7 +9,7 @@ Cleartext form based authentication
 """
 
 from zope.interface import Interface, Attribute
-from zope.interface import implements
+from zope.interface import implementer
 from twisted.cred import credentials, error
 
 
@@ -54,6 +54,7 @@ class IFormCredentialFactory(Interface):
 
 
 
+@implementer(IFormCredentialFactory)
 class FormCredentialFactory(object):
     """
     Credential Factory for XHTML form authentication
@@ -62,7 +63,6 @@ class FormCredentialFactory(object):
     @ivar authenticationRealm: The HTTP authentication realm which will be issued in
         challenges.
     """
-    implements(IFormCredentialFactory)
 
     scheme = 'myapp'
 

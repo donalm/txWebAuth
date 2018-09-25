@@ -48,8 +48,8 @@ class WebAuthSession(server.Session):
 
 
 
+@interface.implementer(portal.IRealm)
 class WebAuthenticatedRealm(object):
-    interface.implements(portal.IRealm)
 
     def __init__(self, anonymousRoot, authorizedRoot):
         self.anonymousRoot = anonymousRoot
