@@ -9,19 +9,21 @@ from twisted.web import resource, server, static
 import credfactory, wrapper
 
 
-class PostableFile(static.File):
+class Simple(resource.Resource):
+    isLeaf = True
+    def __init__(self, username):
+        resource.Resource.__init__(self)
+        self.username = username
 
-    def render(self, request):
-        #import pdb; pdb.set_trace()
-        pass
-        
-    def render_GET(self, request):
-        return self.render_GET(request)
-    
+    def render(self, *args, **kwargs):
+        return resource.Resource.render(self, *args, **kwargs)
+
     def render_POST(self, request):
-        ##import pdb; pdb.set_trace()
-        request.method = 'GET'
-        return self.render_GET(request)
+        return "<html>assembly_elements.tac :: %s</html>" % (self.username,)
+
+    def render_GET(self, request):
+        return "<html>assembly_elements.tac :: %s</html>" % (self.username,)
+
 
 
 
@@ -68,7 +70,7 @@ class WebAuthenticatedRealm(object):
                 return (resource.IResource, self.anonymousRoot(), logout)
             else:
                 log.msg('Authenticated: ' + avatarId)
-                avatar = self.authorizedRoot('/Users/%s' % (avatarId,))
+                avatar = self.authorizedRoot(avatarId)
                 session.avatar = avatar
                 if not session.expireCallbacks:
                     session.notifyOnExpire(lambda: sessionExpired(session))
@@ -86,7 +88,7 @@ credentialFactories = [credfactory.FormCredentialFactory("myapp")]
 
 def authorizedResource(*args, **kw):
     avatar = resource.Resource()
-    avatar.putChild('myapp', PostableFile(*args, **kw))
+    avatar.putChild('myapp', Simple(*args, **kw))
     return avatar
 
 root = wrapper.WebAuthSessionWrapper(
